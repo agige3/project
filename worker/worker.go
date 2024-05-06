@@ -30,10 +30,6 @@ func tryConnectAndGetWorker(DBuser, DBpassword, DBhost, DBdatabaseName string, D
 	return w, nil
 }
 
-func (w *Worker) getUsersFromDB(ctx context.Context, groupID, channelID int) (user.PackOfUsers, error) {
-	panic("implement me")
-}
-
 func (w *Worker) GetUsers(ctx context.Context, groupID, channelID int, needMoreActual bool) (user.PackOfUsers, error) {
 	if !needMoreActual {
 		pack, err := w.getUsersFromRedis(ctx, groupID, channelID)
@@ -52,10 +48,4 @@ func (w *Worker) GetUsers(ctx context.Context, groupID, channelID int, needMoreA
 		// добавить в redis не удалось, не критично
 	}
 	return pack, nil
-}
-
-func (w *Worker) addUser(ctx context.Context, age, groupID int, name string, channelIDs []int) error {
-	//usr := user.User{Age: age, Name: name, GroupID: groupID, ChannelIDs: channelIDs}
-	// делаем запрос к базе данных
-	panic("implement me")
 }
