@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"project/user"
+	"project/internal/user"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -22,8 +22,8 @@ func getRedisClient(addr, pass string) *redis.Client {
 	})
 }
 
-func (w *Worker) getUsersFromRedis(ctx context.Context, groupID, channelID int) (user.PackOfUsers, error) {
-	pack, err := w.redisClient.Get(ctx, makeKeyForRedis(groupID, channelID)).Result()
+func (worker *Worker) getUsersFromRedis(ctx context.Context, groupID, channelID int) (user.PackOfUsers, error) {
+	pack, err := worker.redisClient.Get(ctx, makeKeyForRedis(groupID, channelID)).Result()
 	// какая - то неожиданная ошибка
 	if err != nil {
 		return user.PackOfUsers{}, err

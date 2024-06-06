@@ -5,11 +5,11 @@ import (
 )
 
 type User struct {
-	ID         int    `json: user_id`
-	Age        int    `json: user_age`
-	Name       string `json: user_name`
-	GroupID    int    `json: group_id`
-	ChannelIDs []int  `json: channel_ids`
+	ID         int    `json:"user_id"`
+	Age        int    `json:"user_age"`
+	Name       string `json:"user_name"`
+	GroupID    int    `json:"group_id"`
+	ChannelIDs []int  `json:"channel_ids"`
 }
 
 func (u User) MarshalBinary() ([]byte, error) {
@@ -21,7 +21,7 @@ func (u *User) UnmarshalBinary(data []byte) error {
 }
 
 type PackOfUsers struct {
-	Users []User `json: users`
+	Users []User `json:"users"`
 }
 
 func (p PackOfUsers) MarshalBinary() ([]byte, error) {
