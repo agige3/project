@@ -3,6 +3,7 @@ package userManager
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -16,6 +17,8 @@ import (
 const (
 	defaultExpirationTime = time.Minute * 5
 )
+
+var ErrWorkingWithNilManager = errors.New("You are trying to work with nil manager. Use userManager.New().")
 
 type Manager struct {
 	handler *handler.Handler
@@ -40,11 +43,17 @@ func NewManagerWithExpirationTime(db *sql.DB, client *redis.Client, expirationTi
 	return &Manager{handler: handler}, err
 }
 
-func (m *Manager) SetExpirationTime(expirationTime time.Duration) {
+func (m *Manager) SetExpirationTime(expirationTime time.Duration) error {
+	if m == nil {
+		return ErrWorkingWithNilManager
+	}
 	m.handler.Worker.ActualTime = expirationTime
 }
 
 func (m *Manager) StartServer(addr string) error {
+	if m == nil {
+		return ErrWorkingWithNilManager
+	}
 	r := chi.NewRouter()
 	r.Get("/", m.handler.GetUsers)
 	r.Post("/", m.handler.AddUser)
