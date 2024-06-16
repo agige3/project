@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -66,7 +67,13 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	pack, err := h.Worker.GetUsers(r.Context(), groupID, channelID, useLastVersion)
 	if err != nil {
-		// обработка ошибок
+		if errors.Is(err, worker.ErrNoUsers) {
+			//JSONError(404, err.Error(), w)
+			w.WriteHeader(404)
+		} else {
+			JSONError(500, err.Error(), w)
+		}
+		return
 	}
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)
@@ -76,28 +83,21 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AddUser(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
-		// ошибка
+		JSONError(400, "no body in request", w)
+		return
 	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		// ошибка
-		/*
-			response := struct {
-				Error error
-			}{Error: err}
-			encoder := json.NewEncoder(w)
-			encoder.Encode(response)
-			return
-		*/
+		JSONError(500, "can`t read body", w)
 	}
 	user := user.User{}
 	err = json.Unmarshal(body, &user)
 	if err != nil {
-		// ошибка
+		JSONError(400, fmt.Errorf("error during unmarshaling: %w", err).Error(), w)
 	}
 	id, err := h.Worker.AddUser(r.Context(), &user)
 	if err != nil {
-		// ошибка
+		JSONError(500, fmt.Errorf("error during adding to database: %w", err).Error(), w)
 	}
 	w.WriteHeader(201)
 	response := struct {
