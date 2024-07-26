@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"project/internal/user"
 	"testing"
 	"time"
+
+	"github.com/agige3/project/internal/user"
 )
 
 const (
