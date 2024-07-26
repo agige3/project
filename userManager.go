@@ -18,7 +18,7 @@ const (
 	defaultExpirationTime = time.Minute * 5
 )
 
-var ErrWorkingWithNilManager = errors.New("You are trying to work with nil manager. Use userManager.New().")
+var ErrWorkingWithNilManager = errors.New("trying to work with nil manager. Use userManager.New().")
 
 type Manager struct {
 	handler *handler.Handler
@@ -48,6 +48,7 @@ func (m *Manager) SetExpirationTime(expirationTime time.Duration) error {
 		return ErrWorkingWithNilManager
 	}
 	m.handler.Worker.ActualTime = expirationTime
+	return nil
 }
 
 func (m *Manager) StartServer(addr string) error {

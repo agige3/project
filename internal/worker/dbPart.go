@@ -11,15 +11,17 @@ import (
 )
 
 const (
-	selectStatement = `SELECT user_id, user_name, user_age, group_id, channel_ids FROM users 
+	DefaultTableName = "users"
+
+	selectStatement = `SELECT user_id, user_name, user_age, group_id, channel_ids FROM %s 
 						WHERE  group_id = %d AND %d = ANY (channel_ids)`
 	connectStr = "user=%s password=%s host=%s port=%d database=%s"
 
-	insertStatement = `INSERT INTO users(user_name, user_age, group_id, channel_ids)
+	insertStatement = `INSERT INTO %s (user_name, user_age, group_id, channel_ids)
 	VALUES ($1, $2, $3, $4) RETURNING user_id`
 )
 
-func getDB(user, password, host, databaseName string, port int) (*sql.DB, error) {
+func GetDB(user, password, host, databaseName string, port int) (*sql.DB, error) {
 	db, err := sql.Open("pgx", fmt.Sprintf(connectStr, user, password, host, port, databaseName))
 	if err != nil {
 		return nil, err
@@ -31,29 +33,19 @@ func getDB(user, password, host, databaseName string, port int) (*sql.DB, error)
 	return db, nil
 }
 
-func (worker *Worker) AddUserWithParameters(ctx context.Context, age, groupID int, name string, channelIDs []int) (int, error) {
+func (worker *Worker) addUser(ctx context.Context, tableName string, user *user.User) (int, error) {
 	row := worker.db.QueryRowContext(
 		ctx,
-		insertStatement,
-		name, age, groupID, channelIDs)
-	var user_id int
-	err := row.Scan(&user_id)
-	return user_id, err
-}
-
-func (worker *Worker) AddUser(ctx context.Context, user *user.User) (int, error) {
-	row := worker.db.QueryRowContext(
-		ctx,
-		insertStatement,
+		fmt.Sprintf(insertStatement, tableName),
 		user.Name, user.Age, user.GroupID, user.ChannelIDs)
 	var user_id int
 	err := row.Scan(&user_id)
 	return user_id, err
 }
 
-func (worker *Worker) getUsersFromDB(ctx context.Context, groupID, channelID int) (user.PackOfUsers, error) {
+func (worker *Worker) getUsersFromDB(ctx context.Context, tableName string, groupID, channelID int) (user.PackOfUsers, error) {
 	rows, err := worker.db.QueryContext(ctx,
-		fmt.Sprintf(selectStatement, groupID, channelID))
+		fmt.Sprintf(selectStatement, tableName, groupID, channelID))
 	if err != nil {
 		return user.PackOfUsers{}, err
 	}

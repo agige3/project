@@ -14,7 +14,7 @@ func makeKeyForRedis(groupID, channelID int) string {
 	return fmt.Sprintf("group:%d;channel:%d", groupID, channelID)
 }
 
-func getRedisClient(addr, pass string) *redis.Client {
+func GetRedisClient(addr, pass string) *redis.Client {
 	return redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: pass,

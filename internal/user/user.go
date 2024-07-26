@@ -12,12 +12,24 @@ type User struct {
 	ChannelIDs []int  `json:"channel_ids"`
 }
 
-func (u User) MarshalBinary() ([]byte, error) {
-	return json.Marshal(u)
+func (u *User) MarshalBinary() ([]byte, error) {
+	return json.Marshal(*u)
 }
 
 func (u *User) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, &u)
+}
+
+func (u *User) CompareWithUser(user *User) bool {
+	if u.Age != user.Age || u.Name != user.Name || u.GroupID != user.GroupID || len(u.ChannelIDs) != len(user.ChannelIDs) {
+		return false
+	}
+	for i := 0; i < len(u.ChannelIDs); i++ {
+		if u.ChannelIDs[i] != user.ChannelIDs[i] {
+			return false
+		}
+	}
+	return true
 }
 
 type PackOfUsers struct {

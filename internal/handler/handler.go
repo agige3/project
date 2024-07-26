@@ -12,6 +12,13 @@ import (
 	"project/internal/worker"
 )
 
+const (
+	channelName           = "channel_id"
+	groupName             = "group_id"
+	useLastVersionName    = "use_last_version"
+	useLastVersionDefault = false
+)
+
 type Handler struct {
 	Worker *worker.Worker
 }
@@ -57,15 +64,17 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	useLastVersion := useLastVersionDefault
 	if u.Has(useLastVersionName) {
 		useLastVersionString := u.Get(useLastVersionName)
-		lastVersionParsing, err := strconv.ParseBool(u.Get(useLastVersionString))
+		lastVersionParsed, err := strconv.ParseBool(useLastVersionString)
 		if err != nil {
 			JSONError(400, fmt.Sprintf("cannot convert %s: %s to bool", useLastVersionName, useLastVersionString), w)
 			return
 		}
-		useLastVersion = lastVersionParsing
+		useLastVersion = lastVersionParsed
 	}
-
-	pack, err := h.Worker.GetUsers(r.Context(), groupID, channelID, useLastVersion)
+	if h.Worker == nil {
+		JSONError(500, "worker is nil", w)
+	}
+	pack, err := h.Worker.GetUsers(r.Context(), worker.DefaultTableName, groupID, channelID, useLastVersion)
 	if err != nil {
 		if errors.Is(err, worker.ErrNoUsers) {
 			//JSONError(404, err.Error(), w)
@@ -95,7 +104,7 @@ func (h *Handler) AddUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		JSONError(400, fmt.Errorf("error during unmarshaling: %w", err).Error(), w)
 	}
-	id, err := h.Worker.AddUser(r.Context(), &user)
+	id, err := h.Worker.AddUser(r.Context(), worker.DefaultTableName, &user)
 	if err != nil {
 		JSONError(500, fmt.Errorf("error during adding to database: %w", err).Error(), w)
 	}
