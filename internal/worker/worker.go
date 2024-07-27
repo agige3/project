@@ -10,7 +10,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/agige3/project/internal/user"
+	"project/internal/user"
 )
 
 type Worker struct {

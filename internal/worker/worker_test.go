@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agige3/project/internal/user"
+	"project/internal/user"
 )
 
 const (

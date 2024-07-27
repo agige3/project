@@ -73,11 +73,11 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.Worker == nil {
 		JSONError(500, "worker is nil", w)
+		return
 	}
 	pack, err := h.Worker.GetUsers(r.Context(), worker.DefaultTableName, groupID, channelID, useLastVersion)
 	if err != nil {
 		if errors.Is(err, worker.ErrNoUsers) {
-			//JSONError(404, err.Error(), w)
 			w.WriteHeader(404)
 		} else {
 			JSONError(500, err.Error(), w)
@@ -97,16 +97,19 @@ func (h *Handler) AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		JSONError(500, "can`t read body", w)
+		JSONError(400, fmt.Errorf("error during reading body: %w", err).Error(), w)
+		return
 	}
 	user := user.User{}
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		JSONError(400, fmt.Errorf("error during unmarshaling: %w", err).Error(), w)
+		return
 	}
 	id, err := h.Worker.AddUser(r.Context(), worker.DefaultTableName, &user)
 	if err != nil {
 		JSONError(500, fmt.Errorf("error during adding to database: %w", err).Error(), w)
+		return
 	}
 	w.WriteHeader(201)
 	response := struct {
